@@ -98,7 +98,7 @@ performance(model.lda.pred,measure=list(acc,mmce))
 calculateConfusionMatrix(model.lda.pred)
 
 
-#//-------------kNN-------------#
+#//-------------LDA-------------#
 
 
 #-------------Benchmark Experiments- comparing multiple learners-------------#
