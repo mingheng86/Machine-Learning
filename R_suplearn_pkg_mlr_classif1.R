@@ -52,7 +52,7 @@ model.mnr.pred = predict(model.mnr,iris.task,subset=test)
 performance(model.mnr.pred,measure = list(acc,mmce))
 calculateConfusionMatrix(model.mnr.pred)
 
-#//-------------Multiple Linear Regression-------------#
+#//-------------Multinomial Regression-------------#
 
 
 #-------------kNN-------------#
