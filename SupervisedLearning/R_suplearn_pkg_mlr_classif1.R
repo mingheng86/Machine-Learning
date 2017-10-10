@@ -54,8 +54,11 @@ mnr.tuned = tuneParams('classif.multinom', task=iris.task, resampling = mnr.rsam
 mnr.hypar = generateHyperParsEffectData(mnr.tuned,trafo=TRUE)
 plotHyperParsEffect(mnr.hypar, x='iteration', y='mmce.test.mean', plot.type='line')
 
+#Set the learner based on tuned results
+mnr.lrn = setHyperPars(makeLearner('classif.multinom'),par.vals=mnr.tuned$x)
+
 #Fit model using tuned results
-model.mnr = train(mnr.lrn,iris.task,subset=train, par.values = mnr.tuned$x)
+model.mnr = train(mnr.lrn,iris.task,subset=train)
 
 #Model summary 
 summary(model.mnr$learner.model)
@@ -75,7 +78,24 @@ calculateConfusionMatrix(model.mnr.pred)
 getParamSet('classif.knn')
 knn.lrn = makeLearner('classif.knn', par.vals=list(k=5))
 
-#Fit model
+#Hyper parameter tuning of 'k param
+knn.hyparam = makeParamSet(
+  makeDiscreteParam('k', values = c(1:100))
+)
+
+knn.ctrl = makeTuneControlRandom(maxit = 30)
+knn.rsamp = makeResampleDesc('CV',iters= 3)
+knn.tuned = tuneParams('classif.knn', task=iris.task, resampling = knn.rsamp,
+                       par.set = knn.hyparam, control = knn.ctrl)
+
+#Examine learning curves
+knn.hypar = generateHyperParsEffectData(knn.tuned)
+plotHyperParsEffect(knn.hypar, x='iteration', y='mmce.test.mean', plot.type='line')
+
+#Set the learner based on tuned results
+knn.lrn = setHyperPars(makeLearner('classif.knn'),par.vals=knn.tuned$x)
+
+#Fit model using tuned results
 model.knn = train(knn.lrn,iris.task,subset=train)
 
 #Model summary
@@ -88,7 +108,6 @@ model.knn.pred = predict(model.knn,iris.task)
 #Evaluate performance
 performance(model.knn.pred,measure=list(acc,mmce))
 calculateConfusionMatrix(model.knn.pred)
-
 
 #//-------------kNN-------------#
 
