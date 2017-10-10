@@ -35,12 +35,27 @@ iris.task = makeRegrTask(data=iris, target='Species')
 getTaskDescription(iris.task)
 
 #-------------Multinomial Regression-------------#
+getParamSet('classif.multinom')
 
 #Define learner
 mnr.lrn = makeLearner('classif.multinom')
 
-#Fit model
-model.mnr = train(mnr.lrn,iris.task,subset=train)
+#Hyper parameter tuning of 'decay' param
+mnr.hyparam = makeParamSet(
+  makeNumericParam('decay', lower = -10, upper = 10, trafo = function(x) 10^x)
+)
+
+mnr.ctrl = makeTuneControlRandom(maxit = 100)
+mnr.rsamp = makeResampleDesc('CV',iters= 3)
+mnr.tuned = tuneParams('classif.multinom', task=iris.task, resampling = mnr.rsamp,
+                       par.set = mnr.hyparam, control = mnr.ctrl)
+
+#Examine learning curves
+mnr.hypar = generateHyperParsEffectData(mnr.tuned,trafo=TRUE)
+plotHyperParsEffect(mnr.hypar, x='iteration', y='mmce.test.mean', plot.type='line')
+
+#Fit model using tuned results
+model.mnr = train(mnr.lrn,iris.task,subset=train, par.values = mnr.tuned$x)
 
 #Model summary 
 summary(model.mnr$learner.model)
